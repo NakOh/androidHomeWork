@@ -19,6 +19,7 @@ import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -57,6 +58,8 @@ public class Exam extends AppCompatActivity {
     private int years, months, days, hours, mins;
     private static final String INTENT_ACTION = "arabiannight.tistory.com.alarmmanager";
     private MediaPlayer mp=new MediaPlayer();
+    private RadioButton radioButton1;
+    private RadioButton radioButton2;
 
     private TimePickerDialog.OnTimeSetListener timeListener = new TimePickerDialog.OnTimeSetListener() {
         @Override
@@ -81,13 +84,24 @@ public class Exam extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.exam);
+
         time = (TextView) findViewById(R.id.timeView);
+
         startButton = (Button) findViewById(R.id.start);
         endButton = (Button) findViewById(R.id.alarmOff);
+
+        radioButton1 =(RadioButton) findViewById(R.id.radioButton1);
+        radioButton2 =(RadioButton) findViewById(R.id.radioButton2);
+
         mNotification = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
         mManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
         mCalendar = new GregorianCalendar();
+        mp = MediaPlayer.create(this, R.raw.wakeup);
+
+        radioButton1.setChecked(true);
+
         timetask = new TimerTask() {
             @Override
             public void run() {
@@ -108,6 +122,18 @@ public class Exam extends AppCompatActivity {
         endButton.setOnClickListener(new Button.OnClickListener(){
             public void onClick(View v) {
                 resetAlarm();
+            }
+        });
+
+        radioButton1.setOnClickListener(new Button.OnClickListener(){
+            public void onClick(View v) {
+                mp = MediaPlayer.create(Exam.this, R.raw.wakeup);
+            }
+        });
+
+        radioButton2.setOnClickListener(new Button.OnClickListener(){
+            public void onClick(View v) {
+                mp = MediaPlayer.create(Exam.this, R.raw.sul);
             }
         });
         Timer timer = new Timer();
@@ -146,6 +172,7 @@ public class Exam extends AppCompatActivity {
     private PendingIntent pendingIntent() {
         Intent i = new Intent(getApplicationContext(), Exam.class);
         PendingIntent pi = PendingIntent.getActivity(this, 0, i, 0);
+        mp.start();
         return pi;
     }
 
