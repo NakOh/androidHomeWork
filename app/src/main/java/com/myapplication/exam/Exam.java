@@ -42,7 +42,7 @@ public class Exam extends AppCompatActivity {
     BackThread3 thread3 = new BackThread3();
 
     public native int PiezoControl(int value);
-    public native int FLEDControl(int led_num, int val1, int val2, int val3);
+    public native int FLEDControl(int led_num, String str);
     public native int DotMatrixControl(String data);
     public native int TextLCDOut(String str, String str2);
     public native int IOCtlClear();
@@ -71,8 +71,11 @@ public class Exam extends AppCompatActivity {
     private boolean checkThread3 = false;
     private boolean stop = false;
     private int ret;
-
+    int[] led_val;
     //1 도 2 레 3 미 4파 5 솔 6라 7시 8도
+    private String[] color = {"red","green","blue","yellow","greenblue","red","green","blue","yellow","greenblue","red","green","blue","yellow","greenblue","red","green","blue","yellow","greenblue","red","green","blue","yellow","greenblue",
+            "red","green","blue","yellow","greenblue","red","green","blue","yellow","greenblue","red","green","blue","yellow","greenblue","red","green","blue","yellow","greenblue","red","green","blue","yellow","greenblue",
+            "red","green","blue","yellow","greenblue","red","green","blue","yellow","greenblue","red","green","blue","yellow","greenblue","red","green","blue","yellow","greenblue"};
     private int[] alarm1= {6,6,0,6,6,0,17,0,18,0,6,6,0,6,6,0,5,0,52,0,6,6,0,6,6,0,17,0,18,0,6,6,0,6,6,0,5,0,52,0,33,22,19,19,19,19,19,19,19,19,19,19,19,19,19,19,33,22,66,66,66,66,66,66,66,66,66,66,66,66,66,66,33,22,18,18,18,18,18,18,18,18,18,18,18,18,18,18,17,18,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     private int[] alarm2= {0,0,0,0,23,0,23,23,18,0,18,0,18,0,18,18,34,34,34,34,34,0,33,34,33,33,33,33,33,33,33,33,
             0,0,0,0,21,0,22,0,23,0,23,0,18,18,18,0,18,0,18,0,22,22,22,0,21,21,21,21,21,21,21,21,
@@ -80,7 +83,6 @@ public class Exam extends AppCompatActivity {
             0,0,0,0,21,21,22,22,23,0,23,23,18,18,18,0,18,0,18,0,22,22,22,0,21,21,21,0,19,0,19,0,
             19,0,19,0,19,0,19,0,35,0,35,19,0,0,0,35,0,35,19,0,19,0,19,0,19,0,0,3,0,0,0,0,
             19,0,19,0,19,0,19,0,35,0,35,19,0,0,0,67,67,0,67,67,0,21,21,21,21,21,21,21,21,21,21};
-
     private TimePickerDialog.OnTimeSetListener timeListener = new TimePickerDialog.OnTimeSetListener() {
         @Override
         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
@@ -101,15 +103,20 @@ public class Exam extends AppCompatActivity {
         }
     };
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        @Override
+        protected void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
 
-        Intent i = getIntent();
-        checkThread3 = i.getBooleanExtra("checkThread3", false);
-        musicCheck = i.getBooleanExtra("song", false);
-        setContentView(R.layout.exam);
+            Intent i = getIntent();
+            checkThread3 = i.getBooleanExtra("checkThread3", false);
+            musicCheck = i.getBooleanExtra("song", false);
+            setContentView(R.layout.exam);
 
+            led_val = new int[4];
+        led_val[0] = 9;
+        for (int j = 1; j < 4; j++) {
+            led_val[j] = 0;
+        }
         disp = true;
         cursor = false;
         blink = false;
@@ -159,6 +166,8 @@ public class Exam extends AppCompatActivity {
 
         startButton.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
+                led_val[0] = 9;
+                FLEDControl(led_val[0],"yellow");
                 final Calendar c = Calendar.getInstance();
                 int year = c.get(Calendar.YEAR);
                 int month = c.get(Calendar.MONTH);
@@ -169,24 +178,32 @@ public class Exam extends AppCompatActivity {
 
         endButton.setOnClickListener(new Button.OnClickListener(){
             public void onClick(View v) {
+                led_val[0] = 8;
+                FLEDControl(led_val[0], "red");
                 resetAlarm();
             }
         });
 
         radioButton1.setOnClickListener(new Button.OnClickListener(){
             public void onClick(View v) {
+                led_val[0] = 7;
+                FLEDControl(led_val[0], "blue");
                 musicCheck = true;
             }
         });
 
         radioButton2.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
+                led_val[0] = 6; // 초록
+                FLEDControl(led_val[0],"green");
                 musicCheck = false;
             }
         });
 
         button.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
+                led_val[0] = 5;
+                FLEDControl(led_val[0], "greenblue");
                 stop = true;
                 IOCtlBlink(true);
                 IOCtlBlink(false);
@@ -219,7 +236,6 @@ public class Exam extends AppCompatActivity {
             alarmCheck = false;
             alarm.CancelAlarm(context);
         }
-
         Toast.makeText(getApplicationContext(), "알람 등록 해제", Toast.LENGTH_SHORT).show();
     }
 
@@ -286,7 +302,8 @@ public class Exam extends AppCompatActivity {
                 if (stop == false) {
                     if (musicCheck) {
                         for (int i = 0; i < alarm1.length; i++) {
-                            if (stop == false){
+                            if (stop == true){
+                                PiezoControl(0);
                                 break;
                             }
                             PiezoControl(alarm1[i]);
@@ -301,7 +318,8 @@ public class Exam extends AppCompatActivity {
                         }
                     } else {
                         for (int i = 0; i < alarm2.length; i++) {
-                            if (stop == false){
+                            if (stop == true){
+                                PiezoControl(0);
                                 break;
                             }
                             PiezoControl(alarm2[i]);

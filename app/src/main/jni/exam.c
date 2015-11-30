@@ -232,10 +232,12 @@ Java_com_myapplication_exam_Exam_LEDControl( JNIEnv* env,
 }
 
 jint
-Java_com_myapplication_exam_Exam_FLEDControl(JNIEnv* env, jobject thiz, jint led_num, jint val1, jint val2, jint val3)
+Java_com_myapplication_exam_Exam_FLEDControl(JNIEnv* env, jobject thiz, jint led_num, jstring data)
 {
-    int fd,ret;
-    char buf[3];
+    int fd, ret, len;
+    const char *buf;
+
+    char str[100];
     fd = open("/dev/fullcolorled",O_WRONLY);
     if (fd < 0)
     {
@@ -248,14 +250,11 @@ Java_com_myapplication_exam_Exam_FLEDControl(JNIEnv* env, jobject thiz, jint led
         case FULL_LED2: ioctl(fd,FULL_LED2); break;
         case FULL_LED3: ioctl(fd,FULL_LED3); break;
         case FULL_LED4: ioctl(fd,FULL_LED4); break;
-        case ALL_LED:     ioctl(fd,ALL_LED);    break;
+        case ALL_LED:     ioctl(fd,ALL_LED);   break;
     }
-    buf[0] = val1;
-    buf[1] = val2;
-    buf[2] = val3;
-
-    write(fd,buf,3);
-
+    buf = (*env)->GetStringUTFChars(env, data, 0);
+    len = (*env)->GetStringLength(env, data);
+    write(fd,buf,len);
     close(fd);
     return ret;
 
