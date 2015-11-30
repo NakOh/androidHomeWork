@@ -14,12 +14,14 @@ import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.format.Time;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -33,253 +35,169 @@ import java.util.GregorianCalendar;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class Exam extends AppCompatActivity {
-    Handler handler = new Handler();
-    TimerTask timetask;
-    static {
-        System.loadLibrary("exam");
-    }
-
-    BackThread thread = new BackThread();
-    BackThread2 thread2 = new BackThread2();
-    BackThread3 thread3 = new BackThread3();
-
-    public native int PiezoControl(int value);
-    public native int FLEDControl(int led_num, int val1, int val2, int val3);
-    public native int DotMatrixControl(String data);
-    public native int TextLCDOut(String str, String str2);
-    public native int IOCtlClear();
-    public native int IOCtlReturnHome();
-    public native int IOCtlDisplay(boolean bOn);
-    public native int IOCtlCursor(boolean bOn);
-    public native int IOCtlBlink(boolean bOn);
-    public native int SegmentControl(int value);
-    public native int SegmentIOControl(int value);
-    public native int LEDControl(int value);
-
-    private TextView time;
-    private Button startButton;
-    private Button endButton;
-    private Button button;
-    private AlarmManager mManager;
-    private GregorianCalendar mCalendar;
-    private NotificationManager mNotification;
-    private int years, months, days, hours, mins;
-    private static final String INTENT_ACTION = "arabiannight.tistory.com.alarmmanager";
-    private MediaPlayer mp;
-    private RadioButton radioButton1;
-    private RadioButton radioButton2;
-
-    private int music =  R.raw.wakeup;
-    private boolean disp, cursor, blink;
-    private boolean check = false;
-
-    private int ret;
-
-    private TimePickerDialog.OnTimeSetListener timeListener = new TimePickerDialog.OnTimeSetListener() {
-        @Override
-        public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-            hours = hourOfDay; mins = minute;
-            mCalendar.set(years, months, days, hours, mins);
-            setAlarm();
-        }
-    };
-
-    private DatePickerDialog.OnDateSetListener dateListener = new DatePickerDialog.OnDateSetListener() {
-        @Override
-        public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-            years = year; months = monthOfYear; days = dayOfMonth;
-            final Calendar c = Calendar.getInstance();
-            int hour = c.get(Calendar.HOUR);
-            int minute = c.get(Calendar.MINUTE);
-            new TimePickerDialog(Exam.this, AlertDialog.THEME_HOLO_DARK, timeListener, hour, minute, false).show();
-        }
-    };
-
+public class Exam extends AppCompatActivity implements View.OnTouchListener{
+    /** Called when the activity is first created. */
+    static { System.loadLibrary("exam"); }  // JNI Library load
+    public native int PiezoControl(int value);	// JNI Interface
+    int PiezoData;
+    static ImageButton[] white;
+    static ImageButton[] black;
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.exam);
+        PiezoData = 0;
+        PiezoControl(PiezoData);
+        white = new ImageButton[21];
+        black = new ImageButton[15];
 
-        disp = true;
-        cursor = false;
-        blink = false;
+        white[0] = (ImageButton)findViewById(R.id.white1);
+        white[0].setTag(new int[]{1, R.drawable.whiteback1, R.drawable.white1});
+        white[1] = (ImageButton)findViewById(R.id.white2);
+        white[1].setTag(new int[]{2, R.drawable.whiteback2, R.drawable.white2});
+        white[2] = (ImageButton)findViewById(R.id.white3);
+        white[2].setTag(new int[]{3, R.drawable.whiteback3, R.drawable.white3});
+        white[3] = (ImageButton)findViewById(R.id.white4);
+        white[3].setTag(new int[]{4, R.drawable.whiteback4, R.drawable.white4});
+        white[4] = (ImageButton)findViewById(R.id.white5);
+        white[4].setTag(new int[]{5, R.drawable.whiteback5, R.drawable.white5});
+        white[5] = (ImageButton)findViewById(R.id.white6);
+        white[5].setTag(new int[]{6, R.drawable.whiteback6, R.drawable.white6});
+        white[6] = (ImageButton)findViewById(R.id.white7);
+        white[6].setTag(new int[]{7, R.drawable.whiteback7, R.drawable.white7});
+        white[7] = (ImageButton)findViewById(R.id.white8);
+        white[7].setTag(new int[]{17, R.drawable.whiteback1, R.drawable.white1});
+        white[8] = (ImageButton)findViewById(R.id.white9);
+        white[8].setTag(new int[]{18, R.drawable.whiteback2, R.drawable.white2});
+        white[9] = (ImageButton)findViewById(R.id.white10);
+        white[9].setTag(new int[]{19, R.drawable.whiteback3, R.drawable.white3});
+        white[10] = (ImageButton)findViewById(R.id.white11);
+        white[10].setTag(new int[]{20, R.drawable.whiteback4, R.drawable.white4});
+        white[11] = (ImageButton)findViewById(R.id.white12);
+        white[11].setTag(new int[]{21, R.drawable.whiteback5, R.drawable.white5});
+        white[12] = (ImageButton)findViewById(R.id.white13);
+        white[12].setTag(new int[]{22, R.drawable.whiteback6, R.drawable.white6});
+        white[13] = (ImageButton)findViewById(R.id.white14);
+        white[13].setTag(new int[]{23, R.drawable.whiteback7, R.drawable.white7});
+        white[14] = (ImageButton)findViewById(R.id.white15);
+        white[14].setTag(new int[]{33, R.drawable.whiteback1, R.drawable.white1});
+        white[15] = (ImageButton)findViewById(R.id.white16);
+        white[15].setTag(new int[]{34, R.drawable.whiteback2, R.drawable.white2});
+        white[16] = (ImageButton)findViewById(R.id.white17);
+        white[16].setTag(new int[]{35, R.drawable.whiteback3, R.drawable.white3});
+        white[17] = (ImageButton)findViewById(R.id.white18);
+        white[17].setTag(new int[]{36, R.drawable.whiteback4, R.drawable.white4});
+        white[18] = (ImageButton)findViewById(R.id.white19);
+        white[18].setTag(new int[]{37, R.drawable.whiteback5, R.drawable.white5});
+        white[19] = (ImageButton)findViewById(R.id.white20);
+        white[19].setTag(new int[]{38, R.drawable.whiteback6, R.drawable.white6});
+        white[20] = (ImageButton)findViewById(R.id.white21);
+        white[20].setTag(new int[]{39, R.drawable.whiteback7, R.drawable.white7});
 
-        IOCtlClear();
-        IOCtlReturnHome();
-        IOCtlDisplay(disp);
-        IOCtlCursor(cursor);
-        IOCtlBlink(blink);
+        black[0] = (ImageButton)findViewById(R.id.black1);
+        black[0].setTag(new int[]{49, R.drawable.blackback1,R.drawable.black1});
+        black[1] = (ImageButton)findViewById(R.id.black2);
+        black[1].setTag(new int[]{50, R.drawable.blackback2,R.drawable.black2});
+        black[2] = (ImageButton)findViewById(R.id.black3);
+        black[2].setTag(new int[]{51, R.drawable.blackback3,R.drawable.black3});
+        black[3] = (ImageButton)findViewById(R.id.black4);
+        black[3].setTag(new int[]{52, R.drawable.blackback4,R.drawable.black4});
+        black[4] = (ImageButton)findViewById(R.id.black5);
+        black[4].setTag(new int[]{53, R.drawable.blackback5,R.drawable.black5});
+        black[5] = (ImageButton)findViewById(R.id.black6);
+        black[5].setTag(new int[]{65, R.drawable.blackback1,R.drawable.black1});
+        black[6] = (ImageButton)findViewById(R.id.black7);
+        black[6].setTag(new int[]{66, R.drawable.blackback2,R.drawable.black2});
+        black[7] = (ImageButton)findViewById(R.id.black8);
+        black[7].setTag(new int[]{67, R.drawable.blackback3,R.drawable.black3});
+        black[8] = (ImageButton)findViewById(R.id.black9);
+        black[8].setTag(new int[]{68, R.drawable.blackback4,R.drawable.black4});
+        black[9] = (ImageButton)findViewById(R.id.black10);
+        black[9].setTag(new int[]{69, R.drawable.blackback5,R.drawable.black5});
+        black[10] = (ImageButton)findViewById(R.id.black11);
+        black[10].setTag(new int[]{81, R.drawable.blackback1,R.drawable.black1});
+        black[11] = (ImageButton)findViewById(R.id.black12);
+        black[11].setTag(new int[]{82, R.drawable.blackback2,R.drawable.black2});
+        black[12] = (ImageButton)findViewById(R.id.black13);
+        black[12].setTag(new int[]{83, R.drawable.blackback3,R.drawable.black3});
+        black[13] = (ImageButton)findViewById(R.id.black14);
+        black[13].setTag(new int[]{84, R.drawable.blackback4,R.drawable.black4});
+        black[14] = (ImageButton)findViewById(R.id.black15);
+        black[14].setTag(new int[]{85, R.drawable.blackback5,R.drawable.black5});
 
-        ret = TextLCDOut(" Wake Up!!! ", "   You must go School  ");
+        white[0].setOnTouchListener(this);
+        white[1].setOnTouchListener(this);
+        white[2].setOnTouchListener(this);
+        white[3].setOnTouchListener(this);
+        white[4].setOnTouchListener(this);
+        white[5].setOnTouchListener(this);
+        white[6].setOnTouchListener(this);
+        white[7].setOnTouchListener(this);
+        white[8].setOnTouchListener(this);
+        white[9].setOnTouchListener(this);
+        white[10].setOnTouchListener(this);
+        white[11].setOnTouchListener(this);
+        white[12].setOnTouchListener(this);
+        white[13].setOnTouchListener(this);
+        white[14].setOnTouchListener(this);
+        white[15].setOnTouchListener(this);
+        white[16].setOnTouchListener(this);
+        white[17].setOnTouchListener(this);
+        white[18].setOnTouchListener(this);
+        white[19].setOnTouchListener(this);
+        white[20].setOnTouchListener(this);
 
-        time = (TextView) findViewById(R.id.timeView);
-
-        startButton = (Button) findViewById(R.id.start);
-        endButton = (Button) findViewById(R.id.alarmOff);
-        button = (Button) findViewById(R.id.button);
-
-        radioButton1 =(RadioButton) findViewById(R.id.radioButton1);
-        radioButton2 =(RadioButton) findViewById(R.id.radioButton2);
-
-        mNotification = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
-        mManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
-        mCalendar = new GregorianCalendar();
-        radioButton1.setChecked(true);
-
-        timetask = new TimerTask() {
-            @Override
-            public void run() {
-                update();
-            }
-        };
-
-        thread.setDaemon(true);
-        thread.start();
-        thread2.setDaemon(true);
-        thread2.start();
-        thread3.setDaemon(true);
-        thread3.start();
-        startButton.setOnClickListener(new Button.OnClickListener() {
-            public void onClick(View v) {
-                final Calendar c = Calendar.getInstance();
-                int year = c.get(Calendar.YEAR);
-                int month = c.get(Calendar.MONTH);
-                int day = c.get(Calendar.DAY_OF_MONTH);
-                new DatePickerDialog(Exam.this, AlertDialog.THEME_HOLO_DARK, dateListener, year, month, day).show();
-            }
-        });
-
-        endButton.setOnClickListener(new Button.OnClickListener(){
-            public void onClick(View v) {
-                resetAlarm();
-            }
-        });
-
-        radioButton1.setOnClickListener(new Button.OnClickListener(){
-            public void onClick(View v) {
-                music = R.raw.wakeup;
-            }
-        });
-
-        radioButton2.setOnClickListener(new Button.OnClickListener(){
-            public void onClick(View v) {
-                music = R.raw.sul;
-            }
-        });
-
-        button.setOnClickListener(new Button.OnClickListener() {
-            public void onClick(View v) {
-//                mp.stop();
-                    IOCtlBlink(true);
-                    IOCtlBlink(false);
-                TextLCDOut(" Wake Up!!! ", "   You must go School  ");
-            for(int i=0; i<20; i++){
-
-            }
-                IOCtlBlink(true);
-                IOCtlBlink(false);
-                TextLCDOut(" Wake Up!!! ", "   You must go School  ");
-            }
-        });
-
-        Timer timer = new Timer();
-        timer.schedule(timetask, 0, 1000);
+        black[0].setOnTouchListener(this);
+        black[1].setOnTouchListener(this);
+        black[2].setOnTouchListener(this);
+        black[3].setOnTouchListener(this);
+        black[4].setOnTouchListener(this);
+        black[5].setOnTouchListener(this);
+        black[6].setOnTouchListener(this);
+        black[7].setOnTouchListener(this);
+        black[8].setOnTouchListener(this);
+        black[9].setOnTouchListener(this);
+        black[10].setOnTouchListener(this);
+        black[11].setOnTouchListener(this);
+        black[12].setOnTouchListener(this);
+        black[13].setOnTouchListener(this);
+        black[14].setOnTouchListener(this);
     }
-
-    private void setAlarm() {
-        mManager.set(AlarmManager.RTC_WAKEUP, mCalendar.getTimeInMillis(), pendingIntent());
-        check = true;
-        Toast.makeText(getApplicationContext(), "알람 등록 완료", Toast.LENGTH_SHORT).show();
-    }
-
-    private void resetAlarm() {
-        mManager.cancel(pendingIntent());
-        check = false;
-        Toast.makeText(getApplicationContext(), "알람 등록 해제", Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_exam, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+    public boolean onTouch(View view, MotionEvent motionEvent) {
+        int action = motionEvent.getAction();
+        boolean bret = false;
+        if (view instanceof ImageButton) {
+            ImageButton imgBtn = (ImageButton) view;
+            bret = pianoKeyHandle(imgBtn, action);
         }
-
-        return super.onOptionsItemSelected(item);
+        return bret;
     }
 
-    private PendingIntent pendingIntent() {
-        Intent i = new Intent(getApplicationContext(), Exam.class);
-        PendingIntent pi = PendingIntent.getActivity(this, 0, i, 0);
-        mp = MediaPlayer.create(this, music);
-        check = false;
-        mp.start();
-        return pi;
-    }
-
-    protected void update(){
-        Runnable updater = new Runnable() {
-            @Override
-            public void run() {
-                long now = System.currentTimeMillis();
-                Date date = new Date(now);
-                SimpleDateFormat sdfNow = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-                String strNow = sdfNow.format(date);
-                time.setText(strNow);
-            }
-        };
-        handler.post(updater);
-    }
-    class BackThread2 extends Thread {
-        public void run(){
-            while(true){
-                if(check == true){
-                    DotMatrixControl("PM");
-                }else{
-                    DotMatrixControl("AM");
-                }
-            }
-        }
-    }
-    class BackThread3 extends Thread {
-        public void run(){
-            while(true){
-                PiezoControl(11);
-                PiezoControl(12);
-                PiezoControl(13);
-                PiezoControl(14);
-                PiezoControl(15);
-            }
-        }
-    }
-
-    class BackThread extends Thread {
-        public void run() {
-            while (true) {
-                SegmentIOControl(1);
-                int result = 0;
-                Time t = new Time();
-                t.set(System.currentTimeMillis());
-                result = t.hour * 10000 + t.minute * 100 + t.second;
-                SegmentControl(result);
-                for(int i =0; i<100; i++) {
-                    if (t.hour >= 12) {
-                       check  = true;
-                    } else {
-                        check = false;
+    private boolean pianoKeyHandle(ImageButton imgBtn, int action) {
+        boolean bret = false;
+        Object obj = imgBtn.getTag();
+        if (obj != null) {
+            if (obj instanceof int[]) {
+                int[] tag = (int[]) obj;
+                if (tag.length == 3) {
+                    if (action == MotionEvent.ACTION_DOWN) {
+                        System.out.println(tag[0]);
+                        PiezoControl(tag[0]);
+                        imgBtn.setImageResource(tag[1]);
+                    } else if (action == MotionEvent.ACTION_UP) {
+                        imgBtn.setImageResource(tag[2]);
+                        /*try {
+                            Thread.sleep(9 * 10);
+                          } catch (InterruptedException e) { }*/
+                        PiezoControl(0);
+                    } else if (action == MotionEvent.ACTION_MOVE){
+                        imgBtn.setImageResource(tag[2]);
+                        PiezoControl(0);
                     }
                 }
             }
         }
+        return bret;
     }
 }
+
