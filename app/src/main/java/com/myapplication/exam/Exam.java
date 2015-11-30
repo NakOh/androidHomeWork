@@ -75,7 +75,8 @@ public class Exam extends AppCompatActivity {
     private boolean check = false;
 
     private int ret;
-
+    //1 도 2 레 3 미 4파 5 솔 6라 7시 8도
+    private int[] alarm= {1,2,3,4,5,6,7,8};
     private TimePickerDialog.OnTimeSetListener timeListener = new TimePickerDialog.OnTimeSetListener() {
         @Override
         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
@@ -135,6 +136,7 @@ public class Exam extends AppCompatActivity {
             }
         };
 
+        PiezoControl(0);
         thread.setDaemon(true);
         thread.start();
         thread2.setDaemon(true);
@@ -172,8 +174,8 @@ public class Exam extends AppCompatActivity {
         button.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
 //                mp.stop();
-                    IOCtlBlink(true);
-                    IOCtlBlink(false);
+                 IOCtlBlink(true);
+                 IOCtlBlink(false);
                 TextLCDOut(" Wake Up!!! ", "   You must go School  ");
             for(int i=0; i<20; i++){
 
@@ -253,12 +255,13 @@ public class Exam extends AppCompatActivity {
     }
     class BackThread3 extends Thread {
         public void run(){
-            while(true){
-                PiezoControl(11);
-                PiezoControl(12);
-                PiezoControl(13);
-                PiezoControl(14);
-                PiezoControl(15);
+            for(int i = 0; i < alarm.length; i++ ) {
+                PiezoControl(alarm[i]);
+                try {
+                    BackThread3.sleep(300);
+                }catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
