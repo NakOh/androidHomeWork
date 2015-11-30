@@ -279,3 +279,22 @@ Java_com_myapplication_exam_Exam_DotMatrixControl(JNIEnv* env, jobject thiz, jst
     }
     return 0;
 }
+
+jint
+Java_com_myapplication_exam_Exam_PiezoControl( JNIEnv* env,
+                                                   jobject thiz, jint value )
+{
+    int fd,ret;
+    int data = value;
+
+    fd = open("/dev/piezo",O_WRONLY);
+
+    if(fd < 0) return -errno;
+
+    ret = write(fd, &data, 4);
+    close(fd);
+
+    if(ret == 1) return 0;
+
+    return -1;
+}

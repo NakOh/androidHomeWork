@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.format.Time;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -24,6 +25,7 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -37,6 +39,12 @@ public class Exam extends AppCompatActivity {
     static {
         System.loadLibrary("exam");
     }
+
+    BackThread thread = new BackThread();
+    BackThread2 thread2 = new BackThread2();
+    BackThread3 thread3 = new BackThread3();
+
+    public native int PiezoControl(int value);
     public native int FLEDControl(int led_num, int val1, int val2, int val3);
     public native int DotMatrixControl(String data);
     public native int TextLCDOut(String str, String str2);
@@ -52,14 +60,21 @@ public class Exam extends AppCompatActivity {
     private TextView time;
     private Button startButton;
     private Button endButton;
+    private Button button;
     private AlarmManager mManager;
     private GregorianCalendar mCalendar;
     private NotificationManager mNotification;
     private int years, months, days, hours, mins;
     private static final String INTENT_ACTION = "arabiannight.tistory.com.alarmmanager";
-    private MediaPlayer mp=new MediaPlayer();
+    private MediaPlayer mp;
     private RadioButton radioButton1;
     private RadioButton radioButton2;
+
+    private int music =  R.raw.wakeup;
+    private boolean disp, cursor, blink;
+    private boolean check = false;
+
+    private int ret;
 
     private TimePickerDialog.OnTimeSetListener timeListener = new TimePickerDialog.OnTimeSetListener() {
         @Override
@@ -87,10 +102,23 @@ public class Exam extends AppCompatActivity {
 
         setContentView(R.layout.exam);
 
+        disp = true;
+        cursor = false;
+        blink = false;
+
+        IOCtlClear();
+        IOCtlReturnHome();
+        IOCtlDisplay(disp);
+        IOCtlCursor(cursor);
+        IOCtlBlink(blink);
+
+        ret = TextLCDOut(" Wake Up!!! ", "   You must go School  ");
+
         time = (TextView) findViewById(R.id.timeView);
 
         startButton = (Button) findViewById(R.id.start);
         endButton = (Button) findViewById(R.id.alarmOff);
+        button = (Button) findViewById(R.id.button);
 
         radioButton1 =(RadioButton) findViewById(R.id.radioButton1);
         radioButton2 =(RadioButton) findViewById(R.id.radioButton2);
@@ -98,8 +126,6 @@ public class Exam extends AppCompatActivity {
         mNotification = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
         mManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
         mCalendar = new GregorianCalendar();
-        mp = MediaPlayer.create(this, R.raw.wakeup);
-
         radioButton1.setChecked(true);
 
         timetask = new TimerTask() {
@@ -109,6 +135,12 @@ public class Exam extends AppCompatActivity {
             }
         };
 
+        thread.setDaemon(true);
+        thread.start();
+        thread2.setDaemon(true);
+        thread2.start();
+        thread3.setDaemon(true);
+        thread3.start();
         startButton.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
                 final Calendar c = Calendar.getInstance();
@@ -127,26 +159,44 @@ public class Exam extends AppCompatActivity {
 
         radioButton1.setOnClickListener(new Button.OnClickListener(){
             public void onClick(View v) {
-                mp = MediaPlayer.create(Exam.this, R.raw.wakeup);
+                music = R.raw.wakeup;
             }
         });
 
         radioButton2.setOnClickListener(new Button.OnClickListener(){
             public void onClick(View v) {
-                mp = MediaPlayer.create(Exam.this, R.raw.sul);
+                music = R.raw.sul;
             }
         });
+
+        button.setOnClickListener(new Button.OnClickListener() {
+            public void onClick(View v) {
+//                mp.stop();
+                    IOCtlBlink(true);
+                    IOCtlBlink(false);
+                TextLCDOut(" Wake Up!!! ", "   You must go School  ");
+            for(int i=0; i<20; i++){
+
+            }
+                IOCtlBlink(true);
+                IOCtlBlink(false);
+                TextLCDOut(" Wake Up!!! ", "   You must go School  ");
+            }
+        });
+
         Timer timer = new Timer();
         timer.schedule(timetask, 0, 1000);
     }
 
     private void setAlarm() {
         mManager.set(AlarmManager.RTC_WAKEUP, mCalendar.getTimeInMillis(), pendingIntent());
+        check = true;
         Toast.makeText(getApplicationContext(), "알람 등록 완료", Toast.LENGTH_SHORT).show();
     }
 
     private void resetAlarm() {
         mManager.cancel(pendingIntent());
+        check = false;
         Toast.makeText(getApplicationContext(), "알람 등록 해제", Toast.LENGTH_SHORT).show();
     }
 
@@ -160,7 +210,6 @@ public class Exam extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
@@ -172,6 +221,8 @@ public class Exam extends AppCompatActivity {
     private PendingIntent pendingIntent() {
         Intent i = new Intent(getApplicationContext(), Exam.class);
         PendingIntent pi = PendingIntent.getActivity(this, 0, i, 0);
+        mp = MediaPlayer.create(this, music);
+        check = false;
         mp.start();
         return pi;
     }
@@ -188,5 +239,47 @@ public class Exam extends AppCompatActivity {
             }
         };
         handler.post(updater);
+    }
+    class BackThread2 extends Thread {
+        public void run(){
+            while(true){
+                if(check == true){
+                    DotMatrixControl("PM");
+                }else{
+                    DotMatrixControl("AM");
+                }
+            }
+        }
+    }
+    class BackThread3 extends Thread {
+        public void run(){
+            while(true){
+                PiezoControl(11);
+                PiezoControl(12);
+                PiezoControl(13);
+                PiezoControl(14);
+                PiezoControl(15);
+            }
+        }
+    }
+
+    class BackThread extends Thread {
+        public void run() {
+            while (true) {
+                SegmentIOControl(1);
+                int result = 0;
+                Time t = new Time();
+                t.set(System.currentTimeMillis());
+                result = t.hour * 10000 + t.minute * 100 + t.second;
+                SegmentControl(result);
+                for(int i =0; i<100; i++) {
+                    if (t.hour >= 12) {
+                       check  = true;
+                    } else {
+                        check = false;
+                    }
+                }
+            }
+        }
     }
 }
