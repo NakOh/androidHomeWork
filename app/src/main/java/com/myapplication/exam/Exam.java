@@ -76,7 +76,8 @@ public class Exam extends AppCompatActivity {
 
     private int ret;
     //1 도 2 레 3 미 4파 5 솔 6라 7시 8도
-    private int[] alarm= {1,2,3,4,5,6,7,8};
+    private int[] alarm= {6,6,0,6,6,0,17,0,18,0,6,6,0,6,6,0,5,0,52,0,6,6,0,6,6,0,17,0,18,0,6,6,0,6,6,0,5,0,52,0,33,22,19,19,19,19,19,19,19,19,19,19,19,19,19,19,33,22,66,66,66,66,66,66,66,66,66,66,66,66,66,66,33,22,18,18,18,18,18,18,18,18,18,18,18,18,18,18,17,18,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+
     private TimePickerDialog.OnTimeSetListener timeListener = new TimePickerDialog.OnTimeSetListener() {
         @Override
         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
@@ -258,9 +259,12 @@ public class Exam extends AppCompatActivity {
             for(int i = 0; i < alarm.length; i++ ) {
                 PiezoControl(alarm[i]);
                 try {
-                    BackThread3.sleep(300);
+                    BackThread3.sleep(150);
                 }catch (InterruptedException e) {
                     e.printStackTrace();
+                }
+                if(i == alarm.length-1){
+                    i = 0;
                 }
             }
         }
