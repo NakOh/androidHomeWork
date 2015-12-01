@@ -19,7 +19,7 @@ import java.util.Date;
 public class AlarmManagerBroadcastReceiver extends BroadcastReceiver {
 
     final public static String ONE_TIME = "onetime";
-    private boolean song;
+    private boolean song = true;
     @Override
     public void onReceive(Context context, Intent intent) {
         PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
@@ -36,10 +36,10 @@ public class AlarmManagerBroadcastReceiver extends BroadcastReceiver {
         }
         Format formatter = new SimpleDateFormat("hh:mm:ss a");
         msgStr.append(formatter.format(new Date()));
-
+        song = intent.getBooleanExtra("song", true);
         Intent i = new Intent(context, Exam.class);
-        i.putExtra("checkThread3", Boolean.TRUE);;
-        i.putExtra("song", this.song);
+        i.putExtra("checkThread3", Boolean.TRUE);
+        i.putExtra("song", song);
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(i);
 
@@ -60,6 +60,7 @@ public class AlarmManagerBroadcastReceiver extends BroadcastReceiver {
         Intent intent = new Intent(context, AlarmManagerBroadcastReceiver.class);
         intent.putExtra(ONE_TIME, Boolean.TRUE);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.putExtra("song", song);
         this.song = song;
         PendingIntent pi = PendingIntent.getBroadcast(context, 0, intent, 0);
         am.set(AlarmManager.RTC_WAKEUP, time, pi);
